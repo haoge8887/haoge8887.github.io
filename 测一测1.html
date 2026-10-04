@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测一测：看你和历史哪位名人比较像？</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(ellipse at top,#2a1a3e 0%,#1a1a2e 40%,#0a0a14 100%);
+    min-height:100vh; color:#e8e8e8; padding:16px;
+  }
+  .container {
+    max-width:680px; margin:0 auto;
+    background:rgba(255,255,255,0.04);
+    border-radius:24px; padding:24px 20px;
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(240,194,127,0.15);
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+  }
+  h1 {
+    font-size:23px; text-align:center; margin-bottom:22px;
+    background:linear-gradient(90deg,#f0c27f,#fc5c7d,#f0c27f);
+    background-size:200% auto;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    animation:shine 4s linear infinite;
+    line-height:1.5;
+  }
+  @keyframes shine { to { background-position:200% center; } }
+
+  .progress-bar { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; margin-bottom:22px; overflow:hidden; }
+  .progress-fill { height:100%; width:0%; background:linear-gradient(90deg,#f0c27f,#fc5c7d); transition:width .3s; }
+
+  .scene-tag {
+    display:inline-block; font-size:11px; padding:3px 10px;
+    background:rgba(240,194,127,0.12); color:#f0c27f;
+    border-radius:20px; margin-bottom:12px; letter-spacing:1px;
+  }
+  .question { font-size:17px; line-height:1.65; margin-bottom:18px; font-weight:600; }
+  .options { display:flex; flex-direction:column; gap:11px; }
+  .option {
+    padding:14px 16px; background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1); border-radius:14px;
+    cursor:pointer; transition:all .2s; font-size:14.5px; line-height:1.5;
+  }
+  .option:hover { background:rgba(255,255,255,0.1); border-color:rgba(240,194,127,0.4); transform:translateX(3px); }
+  .option.selected {
+    background:rgba(240,194,127,0.22); border-color:#f0c27f;
+    transform:translateX(6px);
+  }
+
+  .nav-row {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    margin-top:18px;
+  }
+  .nav-btn {
+    padding:13px; border-radius:12px; font-size:14px;
+    font-weight:700; cursor:pointer; letter-spacing:1px;
+    border:none; transition:all .2s;
+  }
+  .nav-btn:disabled { opacity:.3; cursor:not-allowed; }
+  .nav-prev {
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.18);
+    color:#9aa5b1;
+  }
+  .nav-prev:hover:not(:disabled) { border-color:#f0c27f; color:#f0c27f; }
+  .nav-next {
+    background:linear-gradient(90deg,#f0c27f,#fc5c7d);
+    color:#1a1a2e;
+  }
+  .nav-next:hover:not(:disabled) { transform:translateY(-2px); }
+
+  .btn {
+    display:block; width:100%; padding:16px; margin-top:20px;
+    background:linear-gradient(90deg,#f0c27f,#fc5c7d);
+    border:none; border-radius:14px; color:#1a1a2e;
+    font-size:16px; font-weight:800; cursor:pointer;
+    transition:transform .2s; letter-spacing:1px;
+  }
+  .btn:hover { transform:translateY(-2px); }
+
+  .result { display:none; }
+  .result.show { display:block; animation:fadeIn .6s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+  .hero-card {
+    position:relative; border-radius:20px; overflow:hidden;
+    background:
+      radial-gradient(ellipse at top,rgba(240,194,127,0.18),transparent 60%),
+      linear-gradient(135deg,#2a1f12 0%,#3d2a15 50%,#1f1420 100%);
+    border:1px solid rgba(240,194,127,0.5);
+    box-shadow:
+      0 0 0 1px rgba(240,194,127,0.08) inset,
+      0 12px 40px rgba(240,194,127,0.12),
+      0 20px 60px rgba(0,0,0,0.5);
+    margin-bottom:14px;
+    padding:26px 22px 24px;
+    text-align:center;
+  }
+  .hero-card::before {
+    content:""; position:absolute; top:-50%; left:-50%;
+    width:200%; height:200%;
+    background:conic-gradient(from 0deg,transparent,rgba(240,194,127,0.1),transparent 30%);
+    animation:rotate 10s linear infinite; z-index:0;
+  }
+  @keyframes rotate { to { transform:rotate(360deg); } }
+
+  .corner {
+    position:absolute; width:16px; height:16px;
+    border-color:#f0c27f; z-index:2; opacity:.7;
+  }
+  .corner.tl { top:10px; left:10px; border-top:1.5px solid; border-left:1.5px solid; border-top-left-radius:4px; }
+  .corner.tr { top:10px; right:10px; border-top:1.5px solid; border-right:1.5px solid; border-top-right-radius:4px; }
+  .corner.bl { bottom:10px; left:10px; border-bottom:1.5px solid; border-left:1.5px solid; border-bottom-left-radius:4px; }
+  .corner.br { bottom:10px; right:10px; border-bottom:1.5px solid; border-right:1.5px solid; border-bottom-right-radius:4px; }
+
+  .hero-inner { position:relative; z-index:1; }
+
+  .hero-name {
+    font-size:38px; font-weight:900; letter-spacing:4px;
+    background:linear-gradient(90deg,#f0c27f,#ffe4a8,#fc5c7d);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:6px;
+    text-shadow:0 0 30px rgba(240,194,127,0.3);
+  }
+  .hero-tag {
+    font-size:13px; color:#f0c27f; letter-spacing:2px;
+    margin-bottom:12px;
+  }
+  .hero-divider {
+    display:flex; align-items:center; justify-content:center;
+    gap:8px; margin:12px 0;
+  }
+  .hero-divider span {
+    height:1px; width:40px;
+    background:linear-gradient(90deg,transparent,#f0c27f);
+  }
+  .hero-divider span:last-child {
+    background:linear-gradient(90deg,#f0c27f,transparent);
+  }
+  .hero-divider i {
+    width:5px; height:5px; border-radius:50%;
+    background:#f0c27f; display:block;
+    box-shadow:0 0 8px rgba(240,194,127,0.8);
+  }
+  .hero-arche { font-size:12.5px; color:#c9b896; letter-spacing:1.5px; }
+
+  .radar-wrap {
+    background:rgba(255,255,255,0.03); border-radius:18px;
+    padding:16px; margin-bottom:14px;
+    border:1px solid rgba(240,194,127,0.15); text-align:center;
+  }
+  .radar-title { font-size:12.5px; color:#f0c27f; letter-spacing:2px; margin-bottom:8px; }
+  canvas { max-width:100%; }
+
+  .card {
+    background:rgba(255,255,255,0.04); border-radius:16px;
+    padding:18px 20px; margin-bottom:12px;
+    border-left:3px solid #f0c27f;
+  }
+  .card h3 {
+    font-size:12px; color:#f0c27f; margin-bottom:10px;
+    letter-spacing:2px; font-weight:600;
+  }
+  .card p {
+    font-size:14.5px; line-height:1.85; color:#d0d6dc;
+    margin-bottom:8px;
+  }
+  .card p:last-child { margin-bottom:0; }
+  .card p strong { color:#ffe4a8; font-weight:700; }
+
+  .card-gold { border-left-color:#f0c27f; background:rgba(240,194,127,0.07); }
+  .card-pink { border-left-color:#fc5c7d; background:rgba(252,92,125,0.06); }
+  .card-blue { border-left-color:#6fb1fc; background:rgba(111,177,252,0.06); }
+  .card-green { border-left-color:#6fdc8c; background:rgba(111,220,140,0.06); }
+
+  .two-col {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    margin-bottom:12px;
+  }
+  @media (max-width:480px) {
+    .two-col { grid-template-columns:1fr; }
+  }
+
+  .action-row {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    margin-top:16px;
+  }
+  @media (max-width:480px) {
+    .action-row { grid-template-columns:1fr; }
+  }
+  .action-btn {
+    padding:14px; border-radius:14px; font-size:14px;
+    font-weight:700; cursor:pointer; letter-spacing:1px;
+    border:none; transition:transform .2s;
+  }
+  .action-btn:hover { transform:translateY(-2px); }
+  .action-share {
+    background:linear-gradient(90deg,#f0c27f,#fc5c7d);
+    color:#1a1a2e;
+  }
+  .action-restart {
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.18);
+    color:#9aa5b1;
+  }
+  .action-restart:hover { border-color:#f0c27f; color:#f0c27f; }
+
+  .hidden { display:none !important; }
+
+  .share-modal {
+    position:fixed; inset:0; z-index:999;
+    background:rgba(0,0,0,0.85);
+    display:none; align-items:center; justify-content:center;
+    padding:20px;
+    overflow-y:auto;
+  }
+  .share-modal.show { display:flex; }
+  .share-inner { max-width:360px; width:100%; text-align:center; margin:auto; }
+  .share-inner img {
+    width:100%; border-radius:16px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.8);
+  }
+  .share-tip {
+    font-size:13px; color:#9aa5b1; margin-top:14px; line-height:1.6;
+  }
+  .share-close {
+    margin-top:14px; padding:12px 28px; border-radius:12px;
+    background:linear-gradient(90deg,#f0c27f,#fc5c7d);
+    border:none; color:#1a1a2e; font-weight:800;
+    font-size:14px; cursor:pointer; letter-spacing:1px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="intro">
+    <h1>测一测：看你和历史哪位名人比较像？</h1>
+    <button class="btn" onclick="startTest()">开始测试</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="scene-tag" id="sceneTag"></div>
+    <div class="question" id="questionText"></div>
+    <div class="options" id="options"></div>
+    <div class="nav-row">
+      <button class="nav-btn nav-prev" id="prevBtn" onclick="prevQuestion()">上一题</button>
+      <button class="nav-btn nav-next" id="nextBtn" onclick="nextQuestionManual()">下一题</button>
+    </div>
+  </div>
+
+  <div id="result" class="result"></div>
+</div>
+
+<div class="share-modal" id="shareModal">
+  <div class="share-inner">
+    <img id="shareImg" alt="结果卡片">
+    <div class="share-tip">长按图片保存到相册<br>或截图后发小红书</div>
+    <button class="share-close" onclick="closeShare()">关闭</button>
+  </div>
+</div>
+
+<script>
+/* =================================================================
+   二维码配置：把你的购买链接/小红书店铺链接填进来
+   推荐用草料二维码生成：https://cli.im
+   ================================================================= */
+const QR_IMG_URL = "";  // 例如："https://你的图床/二维码.png"
+const QR_LINK_TEXT = "扫码购买完整版";
+
+/* ================= 题库：44 题，11 个场景组（已删除人生终局） ================= */
+const SCENE_GROUPS = [
+  { scene:"楚汉相争", questions:[
+    { q:"鸿门宴前夜，你手握重兵却处于劣势。你会？", opts:[
+      { t:"先示弱，暗中布局，等对方露出破绽", s:{A:3,G:1} },
+      { t:"当面摊牌，气势上先压住对方", s:{B:3} },
+      { t:"联络各路诸侯，抱团取暖", s:{F:3} },
+      { t:"连夜撤离，保存实力再说", s:{G:2,E:1} }
+    ]},
+    { q:"你打了败仗，身边只剩几十人。你会？", opts:[
+      { t:"冷静分析，找一条最可能活的路", s:{A:3,G:1} },
+      { t:"重整旗鼓，誓死再战", s:{C:3} },
+      { t:"先安顿好剩下的兄弟", s:{F:3} },
+      { t:"认了，换条路重新开始", s:{E:2,D:2} }
+    ]},
+    { q:"刘邦和项羽僵持不下，你作为第三方势力。你会？", opts:[
+      { t:"观望，谁给的条件好帮谁", s:{A:3,H:1} },
+      { t:"选一边站，赌一个未来", s:{B:2,C:2} },
+      { t:"谁也不帮，守住自己地盘", s:{G:3} },
+      { t:"两边交好，做中间人", s:{F:3} }
+    ]},
+    { q:"天下初定，功臣们人心浮动。你会？", opts:[
+      { t:"主动退让，把好处留给别人", s:{E:2,F:2} },
+      { t:"该拿的拿，不客气", s:{B:3} },
+      { t:"要一块封地，功成身退", s:{A:2,G:2} },
+      { t:"继续做事，不在乎这些", s:{C:2,F:1} }
+    ]}
+  ]},
+  { scene:"三国鼎立", questions:[
+    { q:"你辅佐的主公优柔寡断，错失战机。你会？", opts:[
+      { t:"写一封长信，逐条分析利弊劝谏", s:{A:3,E:1} },
+      { t:"直接替他拍板，事后再说", s:{B:2,C:2} },
+      { t:"找主公最信任的人一起劝", s:{F:3} },
+      { t:"做好自己的事，时机到了自然会变", s:{E:2,G:2} }
+    ]},
+    { q:"你发现身边有人要害你，但没证据。你会？", opts:[
+      { t:"暗中收集证据，等他自己露馅", s:{A:3,G:1} },
+      { t:"先下手为强，除掉隐患", s:{B:3} },
+      { t:"找盟友，孤立他", s:{F:2,A:1} },
+      { t:"假装不知道，加强自保", s:{G:3} }
+    ]},
+    { q:"敌国大军压境，朝中主和主战吵成一团。你会？", opts:[
+      { t:"先摸清敌情，再决定战和", s:{A:3} },
+      { t:"主战，打出去才有活路", s:{C:2,B:2} },
+      { t:"主和，先保住百姓", s:{F:3} },
+      { t:"拖，拖到对方粮草不济", s:{G:3} }
+    ]},
+    { q:"你功高震主，主公开始猜忌你。你会？", opts:[
+      { t:"主动交出兵权，求田问舍", s:{A:2,G:2,E:1} },
+      { t:"更加低调，事事请示", s:{G:3} },
+      { t:"干脆反了，搏一把", s:{B:3,C:1} },
+      { t:"找主公信任的人帮自己说话", s:{F:2,A:1} }
+    ]}
+  ]},
+  { scene:"盛唐气象", questions:[
+    { q:"你被贬到偏远之地，三年不得重用。你会？", opts:[
+      { t:"写诗写文，把苦闷变成作品", s:{D:3} },
+      { t:"暗中观察局势，等待召回", s:{A:2,G:2} },
+      { t:"就地做事，造福一方百姓", s:{F:3} },
+      { t:"干脆不回去了，另寻活法", s:{D:2,E:2,H:1} }
+    ]},
+    { q:"一群才子聚会，有人当众贬低你的作品。你会？", opts:[
+      { t:"当场回击，用作品说话", s:{D:3,C:1} },
+      { t:"一笑置之，继续喝我的酒", s:{D:2,E:2} },
+      { t:"私下找他聊，化解误会", s:{F:3} },
+      { t:"从此不与他来往", s:{E:2,H:1} }
+    ]},
+    { q:"朝廷请你出仕，但你更想读书写字。你会？", opts:[
+      { t:"婉拒，守住自己的节奏", s:{D:3,E:1} },
+      { t:"出仕，用权力做更大的事", s:{B:3} },
+      { t:"半官半隐，两头都不耽误", s:{A:2,H:2} },
+      { t:"先去看看，不合适再退", s:{G:2,E:2} }
+    ]},
+    { q:"盛世之下，你看到了一些隐忧。你会？", opts:[
+      { t:"写文章提醒世人，尽一份心", s:{D:3,E:1} },
+      { t:"上书朝廷，直言进谏", s:{B:2,C:2} },
+      { t:"做好自己的事，不越位", s:{A:2,G:2} },
+      { t:"暗中准备，以防不测", s:{G:3,A:1} }
+    ]}
+  ]},
+  { scene:"战国纵横", questions:[
+    { q:"你面前有两个强国，都许你高官厚禄。你会？", opts:[
+      { t:"两边都谈，看谁给的筹码更实在", s:{A:3,H:1} },
+      { t:"选强者，跟着赢家走", s:{B:3} },
+      { t:"选更讲信义的那个", s:{F:3} },
+      { t:"谁都不选，自己单干", s:{H:3,C:1} }
+    ]},
+    { q:"你和另一位学者观点完全相反，公开辩论。你会？", opts:[
+      { t:"用逻辑和事实逐条驳倒他", s:{A:3,E:1} },
+      { t:"不辩，各走各的路", s:{E:2,D:2} },
+      { t:"找共同点，求同存异", s:{F:3} },
+      { t:"用寓言和故事让他自己想明白", s:{H:2,D:2} }
+    ]},
+    { q:"你提出的改革方案被保守派全盘否决。你会？", opts:[
+      { t:"调整方案，先争取中间派", s:{A:3,F:1} },
+      { t:"据理力争，寸步不让", s:{B:2,C:2} },
+      { t:"暂退一步，等时机再来", s:{G:3} },
+      { t:"不争了，去地方上做实事", s:{E:2,F:2} }
+    ]},
+    { q:"你被对手羞辱，但实力暂时不如他。你会？", opts:[
+      { t:"记在心里，回去默默积蓄力量", s:{G:3,A:1} },
+      { t:"当场反击，气势不能丢", s:{C:2,B:2} },
+      { t:"联合他的敌人，一起对付他", s:{A:2,H:2} },
+      { t:"一笑而过，不把这种人放心上", s:{E:3,D:1} }
+    ]}
+  ]},
+  { scene:"大汉边关", questions:[
+    { q:"你奉命镇守边关，手下兵少将寡。你会？", opts:[
+      { t:"精算敌我，以奇制胜", s:{A:2,C:2} },
+      { t:"主动出击，打对方一个措手不及", s:{C:3} },
+      { t:"团结当地百姓，军民一心", s:{F:3} },
+      { t:"固守待援，不冒险", s:{G:2,E:1} }
+    ]},
+    { q:"战乱中你带着家人逃难，路遇一队乱兵。你会？", opts:[
+      { t:"冷静交涉，用智谋脱身", s:{A:3,H:1} },
+      { t:"挡在家人前面，硬拼", s:{C:3} },
+      { t:"把仅有的财物分给乱兵求平安", s:{F:3} },
+      { t:"带家人绕小路，避开正面", s:{G:2,E:1} }
+    ]},
+    { q:"你的好友被权贵所害，你无力对抗。你会？", opts:[
+      { t:"忍下来，等自己有实力再报仇", s:{G:3,C:1} },
+      { t:"立刻去拼命，虽死无憾", s:{C:3} },
+      { t:"联合其他受害者一起告状", s:{F:3} },
+      { t:"远走他乡，把这事写成书", s:{D:2,E:2} }
+    ]},
+    { q:"边疆战事吃紧，朝廷却克扣军饷。你会？", opts:[
+      { t:"上书反映，据理力争", s:{B:2,C:2} },
+      { t:"自己想办法筹钱，先稳住军心", s:{F:3,A:1} },
+      { t:"忍下来，以大局为重", s:{G:3} },
+      { t:"带兵回朝，讨个说法", s:{C:3,B:1} }
+    ]}
+  ]},
+  { scene:"魏晋风流", questions:[
+    { q:"朝廷请你出仕，但你更想读书写字。你会？", opts:[
+      { t:"婉拒，守住自己的节奏", s:{D:3,E:1} },
+      { t:"出仕，用权力做更大的事", s:{B:3} },
+      { t:"半官半隐，两头都不耽误", s:{A:2,H:2} },
+      { t:"先去看看，不合适再退", s:{G:2,E:2} }
+    ]},
+    { q:"朋友聚会，大家清谈玄学，你却想聊点实际的。你会？", opts:[
+      { t:"跟着聊，融入氛围", s:{F:2,D:1} },
+      { t:"把话题引到实际问题上", s:{B:2,A:2} },
+      { t:"沉默旁听，观察每个人", s:{A:3,E:1} },
+      { t:"找个借口先走", s:{D:2,H:2} }
+    ]},
+    { q:"你写的一篇文章被权贵批评，要求你修改。你会？", opts:[
+      { t:"改，识时务者为俊杰", s:{G:3,A:1} },
+      { t:"不改，我的文字我做主", s:{D:3,C:1} },
+      { t:"表面改，核心保留", s:{A:3,H:1} },
+      { t:"干脆收回，不发表了", s:{E:2,D:2} }
+    ]},
+    { q:"乱世将至，你手里有一些资源。你会？", opts:[
+      { t:"散尽家财，保全名节", s:{E:3,D:1} },
+      { t:"囤积起来，以备不时之需", s:{G:3,A:1} },
+      { t:"分给族人，一起渡过难关", s:{F:3} },
+      { t:"投资有潜力的人，赌一个未来", s:{B:2,A:2} }
+    ]}
+  ]},
+  { scene:"开国之初", questions:[
+    { q:"你帮主公打下天下，现在要论功行赏。你会？", opts:[
+      { t:"主动退让，把好处留给别人", s:{E:2,F:2} },
+      { t:"该拿的拿，不客气", s:{B:3} },
+      { t:"要一块封地，功成身退", s:{A:2,G:2} },
+      { t:"继续做事，不在乎这些", s:{C:2,F:1} }
+    ]},
+    { q:"新朝初立，百废待兴，你被任命要职。你会？", opts:[
+      { t:"先建制度，把规矩立起来", s:{A:3,E:1} },
+      { t:"先抓经济，让百姓吃饱饭", s:{F:3,B:1} },
+      { t:"先整军备，防外敌入侵", s:{C:3,B:1} },
+      { t:"先招人才，把班子搭起来", s:{A:2,F:2} }
+    ]},
+    { q:"旧主已亡，新朝招揽你。你会？", opts:[
+      { t:"出山，用新平台实现抱负", s:{B:2,A:2} },
+      { t:"隐居不仕，守住气节", s:{E:3,D:1} },
+      { t:"观望几年，看清局势再决定", s:{G:3} },
+      { t:"带着旧部一起投，保全大家", s:{F:3} }
+    ]},
+    { q:"你发现新朝的某个政策会害苦百姓。你会？", opts:[
+      { t:"上书直谏，哪怕得罪人", s:{B:2,C:2} },
+      { t:"私下找机会，慢慢影响决策", s:{A:3,F:1} },
+      { t:"在自己的地盘上先不执行", s:{G:2,F:2} },
+      { t:"辞官不干，眼不见心不烦", s:{D:2,E:2} }
+    ]}
+  ]},
+  { scene:"乱世求生", questions:[
+    { q:"饥荒年月，你手里只有一袋粮。你会？", opts:[
+      { t:"分给最需要的人，一起熬过去", s:{F:3} },
+      { t:"留给自己，先活下来再说", s:{G:2,B:1} },
+      { t:"拿粮换种子，来年再种", s:{A:2,H:2} },
+      { t:"带着粮去投奔有势力的人", s:{B:2,A:1} }
+    ]},
+    { q:"战乱中你被抓壮丁，但你想逃。你会？", opts:[
+      { t:"找准机会，连夜跑路", s:{G:3,C:1} },
+      { t:"假装顺从，暗中观察", s:{A:3,G:1} },
+      { t:"说服同伴一起走", s:{F:3} },
+      { t:"干脆留下，说不定能出头", s:{B:2,C:2} }
+    ]},
+    { q:"你所在的村子被两股势力争夺。你会？", opts:[
+      { t:"两边都不站，带村民躲进山里", s:{G:2,F:2} },
+      { t:"选更强的一方，保全村子", s:{B:2,A:1} },
+      { t:"联合周边村子，自保", s:{F:3} },
+      { t:"自己拉一支队伍，谁也不靠", s:{C:2,B:1,H:1} }
+    ]},
+    { q:"你救了一个身份不明的人，他可能带来麻烦。你会？", opts:[
+      { t:"救人救到底，不管他身份", s:{F:3} },
+      { t:"问清楚来历，再决定", s:{A:2,E:1} },
+      { t:"给他点东西，让他赶紧走", s:{G:2,H:1} },
+      { t:"留下来，说不定有用", s:{B:2,A:1} }
+    ]}
+  ]},
+  { scene:"科举之路", questions:[
+    { q:"你连续三次落榜，家里已无力支持。你会？", opts:[
+      { t:"边教书边再考，不放弃", s:{G:3,E:1} },
+      { t:"不考了，去做生意养家", s:{H:2,B:1} },
+      { t:"投奔赏识自己的官员做幕僚", s:{A:2,F:1} },
+      { t:"归隐田园，读书自娱", s:{D:3,E:1} }
+    ]},
+    { q:"考试前夜，你发现有人作弊，而且考官可能知情。你会？", opts:[
+      { t:"装作没看见，专心考试", s:{G:2,E:1} },
+      { t:"考完再举报，不耽误自己", s:{A:3} },
+      { t:"当场揭发，哪怕影响考试", s:{B:2,C:2} },
+      { t:"联合其他考生一起反映", s:{F:3} }
+    ]},
+    { q:"你终于考中，被派到偏远小县任职。你会？", opts:[
+      { t:"认真做，小地方也能出成绩", s:{F:3,E:1} },
+      { t:"先熬资历，找机会调走", s:{A:2,G:2} },
+      { t:"大刀阔斧改革，做出亮点", s:{B:2,C:2} },
+      { t:"边做边写，把经历变成文章", s:{D:3} }
+    ]},
+    { q:"你的上司贪腐，但对你不错。你会？", opts:[
+      { t:"保持距离，不参与也不举报", s:{G:2,E:1} },
+      { t:"暗中收集证据，等待时机", s:{A:3,G:1} },
+      { t:"找机会劝他收手", s:{F:3} },
+      { t:"直接举报，哪怕得罪人", s:{B:2,C:2} }
+    ]}
+  ]},
+  { scene:"帝王心术", questions:[
+    { q:"你功高震主，皇帝开始猜忌你。你会？", opts:[
+      { t:"主动交出兵权，求田问舍", s:{A:2,G:2,E:1} },
+      { t:"更加低调，事事请示", s:{G:3} },
+      { t:"干脆反了，搏一把", s:{B:3,C:1} },
+      { t:"找皇帝信任的人帮自己说话", s:{F:2,A:1} }
+    ]},
+    { q:"皇帝问你一个敏感问题，你怎么答都不对。你会？", opts:[
+      { t:"如实回答，赌皇帝的气量", s:{B:2,C:2} },
+      { t:"含糊其辞，先混过去", s:{A:3,G:1} },
+      { t:"把问题引回皇帝身上", s:{A:2,H:2} },
+      { t:"沉默，等皇帝自己说", s:{E:2,G:2} }
+    ]},
+    { q:"你发现太子和另一位皇子都在拉拢你。你会？", opts:[
+      { t:"两边都不得罪，保持中立", s:{A:3,G:1} },
+      { t:"选更有胜算的一方", s:{B:3} },
+      { t:"选更有德的一方", s:{F:3} },
+      { t:"找机会外调，远离漩涡", s:{G:3,E:1} }
+    ]},
+    { q:"皇帝要你推荐一个接班人。你会？", opts:[
+      { t:"推荐最有能力的，不管亲疏", s:{B:2,A:1} },
+      { t:"推荐最稳重的，不出错", s:{A:3,E:1} },
+      { t:"推荐对自己有恩的", s:{F:3} },
+      { t:"推辞，不趟这浑水", s:{G:3,E:1} }
+    ]}
+  ]},
+  { scene:"科学探索", questions:[
+    { q:"你提出一个颠覆性的发现，被同行嘲笑。你会？", opts:[
+      { t:"继续研究，用结果证明", s:{H:3,C:1} },
+      { t:"写文章系统阐述，争取支持", s:{A:2,D:2} },
+      { t:"找志同道合的人一起推广", s:{F:2,H:1} },
+      { t:"不争了，把成果留给后人", s:{E:2,D:1,H:1} }
+    ]},
+    { q:"你的研究需要大量资金，但没人愿意投。你会？", opts:[
+      { t:"自己筹钱，砸锅卖铁也要做", s:{H:3,C:1} },
+      { t:"找权贵赞助，说服他们", s:{A:2,B:2} },
+      { t:"联合其他学者，一起申请", s:{F:3} },
+      { t:"先放一放，等时机成熟", s:{G:3,E:1} }
+    ]},
+    { q:"你发现自己的理论有重大缺陷。你会？", opts:[
+      { t:"公开承认，重新来过", s:{B:2,E:1} },
+      { t:"先修补，不急着公开", s:{A:3,G:1} },
+      { t:"找同行讨论，一起解决", s:{F:3} },
+      { t:"换个方向，不钻牛角尖", s:{H:3,D:1} }
+    ]},
+    { q:"你的学生提出了一个和你相反的观点。你会？", opts:[
+      { t:"认真听，对就采纳", s:{E:3,A:1} },
+      { t:"先让他证明自己", s:{B:2,A:1} },
+      { t:"鼓励他继续研究", s:{F:3} },
+      { t:"觉得有意思，一起探讨", s:{H:3,D:1} }
+    ]}
+  ]}
+];
+
+/* ================= 抽题：从 11 组抽 5 组，共 20 题 ================= */
+function buildQuestions() {
+  const groups = shuffle(SCENE_GROUPS).slice(0, 5);
+  let all = [];
+  groups.forEach(g => {
+    g.questions.forEach(q => {
+      all.push({ scene: g.scene, q: q.q, opts: q.opts });
+    });
+  });
+  return all;
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ================= 原型 ================= */
+const archetypes = {
+  A:{ name:"谋略智囊型" }, B:{ name:"帝王雄主型" },
+  C:{ name:"将相开拓型" }, D:{ name:"文人才情型" },
+  E:{ name:"哲思通透型" }, F:{ name:"仁厚聚人型" },
+  G:{ name:"隐忍逆袭型" }, H:{ name:"奇人异类型" }
+};
+
+/* ================= 56 人独立文案 ================= */
+const PEOPLE = {
+  "姜子牙":{ arche:"A", tag:"稳准老辣 · 等待时机的顶级布局者",
+    desc:"你是那种<strong>越老越辣</strong>的人。年轻时未必显山露水，但你一直在积累、在观察、在等一个真正属于你的时机。你不急着证明自己，因为你知道，真正的棋手从不抢开局。",
+    gift:"你的天赋是<strong>耐心和判断力</strong>。别人急的时候你不急，别人乱的时候你不乱。你能在漫长的等待中保持清醒，也能在机会来临时一击必中。这种定力，是天生的帅才。",
+    blind:"等待太久容易错过窗口，有时过于保守，让身边的人觉得你不够进取。",
+    advice:"<strong>只要你在机会来临时敢于出手，就能像姜子牙一样，在渭水边等到属于你的周文王。</strong>你已经等了很久，别再犹豫。" },
+  "张良":{ arche:"A", tag:"运筹帷幄 · 谋国谋身 · 功成身退",
+    desc:"你是那种<strong>既能成事、又能全身而退</strong>的人。你懂得在什么位置做什么事，也懂得什么时候该退。你不贪功，不恋权，因为你看得比大多数人远。",
+    gift:"你的天赋是<strong>分寸感</strong>。你既能在关键时刻献出决定性的一策，也能在功成之后安静离场。这种进退自如的智慧，比单纯的聪明更难得。",
+    blind:"太懂得退，有时会让别人觉得你不够投入、不够热血。",
+    advice:"<strong>只要你保持这份进退有度的清醒，就能像张良一样，在功成名就之后全身而退，善始善终。</strong>" },
+  "诸葛亮":{ arche:"A", tag:"谨慎忠诚 · 智慧极强 · 凡事爱推演",
+    desc:"你是那种<strong>把每件事都想到极致</strong>的人。你不打无准备之仗，也不做没把握的事。你的谨慎不是胆小，而是对结果负责。你身上有一种让人安心的可靠感。",
+    gift:"你的天赋是<strong>系统思维</strong>。你能把复杂的事情拆解成清晰的步骤，也能在混乱中建立秩序。你未必是最快的人，但往往是最稳的人。",
+    blind:"太追求万全，容易错过一些需要冒险的机会，也容易把自己累垮。",
+    advice:"<strong>只要你学会在关键时刻果断出手，就能像诸葛亮一样，既运筹帷幄，也敢六出祁山。</strong>不是所有事都要准备到 100% 才做。" },
+  "郭嘉":{ arche:"A", tag:"奇招频出 · 看人极准 · 赌徒式智慧",
+    desc:"你是那种<strong>不按常理出牌</strong>的聪明人。别人还在按部就班，你已经看到了捷径。你敢赌，也敢承担赌输的后果。你的判断往往快得让人反应不过来。",
+    gift:"你的天赋是<strong>洞察人心</strong>。你能在几句话之间看透一个人的底牌，也能在混乱中抓住最关键的那一环。这种能力，让你在竞争中总能快人一步。",
+    blind:"太依赖直觉和冒险，有时会因为判断失误而付出代价。",
+    advice:"<strong>只要你在冒险时给自己留一条后路，就能像郭嘉一样，用奇谋帮曹操定北方，还能全身而退。</strong>赌赢很重要，活下来更重要。" },
+  "荀彧":{ arche:"A", tag:"王佐之才 · 稳重有原则 · 制度型智囊",
+    desc:"你是那种<strong>有原则、有底线</strong>的人。你不为短期利益动摇，也不为迎合别人改变自己。你相信制度比人情可靠，长期比短期重要。",
+    gift:"你的天赋是<strong>建设能力</strong>。你不只是出主意，你还能把主意变成可执行的制度。你擅长搭建框架、制定规则，让事情在正确的轨道上运转。",
+    blind:"太讲原则，有时会显得不够灵活，也容易在人情社会上吃亏。",
+    advice:"<strong>只要你守住底线又懂得变通，就能像荀彧一样，成为曹操背后最重要的那个人。</strong>原则是底气，方法可以灵活。" },
+  "刘伯温":{ arche:"A", tag:"看透局势 · 谋断犀利 · 带神秘感",
+    desc:"你是那种<strong>看得透、说得准</strong>的人。你不太爱表现，但每次开口都能说到点子上。你对局势的判断往往比别人早半步，这让你显得有点神秘。",
+    gift:"你的天赋是<strong>预判趋势</strong>。你能从蛛丝马迹中看出事情的发展方向，也能在别人还没反应过来时提前布局。这种能力，让你总能站在有利的位置。",
+    blind:"看得太透，有时会显得冷淡、不近人情，也容易因为太准而招人忌惮。",
+    advice:"<strong>只要你把判断力和表达力结合起来，就能像刘伯温一样，帮朱元璋定天下，也留下自己的传奇。</strong>" },
+  "范文程":{ arche:"A", tag:"低调高明 · 复杂局势中的长期规划者",
+    desc:"你是那种<strong>不显山露水但极其重要</strong>的人。你不抢风头，不争功劳，但你做的事情往往决定了整个局面的走向。你擅长在复杂的环境中找到最稳妥的路。",
+    gift:"你的天赋是<strong>长期规划</strong>。你能在别人只看眼前的时候看到五年后，也能在局势不明时保持耐心。你是那种越到关键时刻越靠得住的人。",
+    blind:"太低调，容易被人低估，也容易因为不争而错失应得的东西。",
+    advice:"<strong>只要你该争取时不再退让，就能像范文程一样，在乱世中成为最关键的那颗棋子。</strong>低调是智慧，但你不欠任何人。" },
+  "秦始皇":{ arche:"B", tag:"千古一帝 · 霸气专制 · 统一欲极强",
+    desc:"你是那种<strong>天生要掌控全局</strong>的人。你不喜欢碎片化的东西，你想要的是统一、秩序、效率。你的标准很高，对别人高，对自己更高。",
+    gift:"你的天赋是<strong>整合力</strong>。你能把分散的资源、不同的人、复杂的局面拧成一股绳。你不怕做艰难的决定，也不怕承担责任。",
+    blind:"太强势，容易听不进不同意见，也容易因为追求完美而透支身边的人。",
+    advice:"<strong>只要你学会听不同的声音，就能像秦始皇一样，不仅统一天下，还能让天下人心服。</strong>统一的前提是让人心服。" },
+  "刘邦":{ arche:"B", tag:"市井出身 · 会用人 · 能忍能赢",
+    desc:"你是那种<strong>看起来不那么正经，但最后总能赢</strong>的人。你不装，不端，懂得跟不同的人打交道。你最大的本事不是自己多强，而是能让强的人为你所用。",
+    gift:"你的天赋是<strong>用人</strong>。你能看出谁有什么本事，也能把对的人放到对的位置上。你不嫉妒比自己强的人，反而愿意给他们舞台。",
+    blind:"有时候太随性，容易让人觉得你不够靠谱，也容易在细节上翻车。",
+    advice:"<strong>只要你保持这份用人的格局，就能像刘邦一样，从市井走到皇位，让韩信、张良都为你所用。</strong>" },
+  "曹操":{ arche:"B", tag:"雄才大略 · 奸诈又真实 · 敢冒大险",
+    desc:"你是那种<strong>真实到有点扎人</strong>的人。你不喜欢伪装，也不在乎别人怎么评价你。你敢想别人不敢想的，也敢做别人不敢做的。你的目标感极强。",
+    gift:"你的天赋是<strong>决断和魄力</strong>。你能在混乱中迅速做出判断，也能在别人犹豫时果断出手。你不怕犯错，因为你知道，不行动才是最大的错。",
+    blind:"太直接，容易树敌，也容易因为太强势而让身边的人压力很大。",
+    advice:"<strong>只要你学会给别人留一点空间，就能像曹操一样，既统一北方，也让天下英才归心。</strong>你的野心是燃料，但别烧到身边人。" },
+  "李世民":{ arche:"B", tag:"开疆拓土 · 文武双全 · 帝王格局",
+    desc:"你是那种<strong>能文能武、能打能治</strong>的人。你不只是会冲锋，也懂得怎么经营。你有野心，但你的野心是有章法的，不是蛮干。",
+    gift:"你的天赋是<strong>综合能力</strong>。你能在战场上赢，也能在朝堂上赢。你懂得什么时候该强硬，什么时候该妥协。这种平衡感，是天生的领袖素质。",
+    blind:"太追求完美，容易对自己和身边的人要求过高，也容易因为太能干而揽下太多事。",
+    advice:"<strong>只要你学会分权、学会信任，就能像李世民一样，开创贞观之治，让天下人才为你所用。</strong>" },
+  "武则天":{ arche:"B", tag:"女主称帝 · 冷酷清醒 · 反常规",
+    desc:"你是那种<strong>不被规则定义</strong>的人。别人告诉你什么该做、什么不该做，你偏要试试看。你清醒、果决，也愿意为想要的东西付出代价。",
+    gift:"你的天赋是<strong>破局能力</strong>。你能在别人觉得不可能的地方找到可能，也能在逆境中杀出一条路。你不怕被议论，因为你知道自己要什么。",
+    blind:"太强硬，容易孤立自己，也容易因为太清醒而失去一些柔软的东西。",
+    advice:"<strong>只要你愿意让别人也站在你这边，就能像武则天一样，不仅登上皇位，还能让天下臣服。</strong>" },
+  "朱元璋":{ arche:"B", tag:"底层崛起 · 狠辣务实 · 控制欲强",
+    desc:"你是那种<strong>从最底层一路打上来</strong>的人。你吃过苦，所以你知道机会有多珍贵。你务实、狠辣，也极度珍惜自己拥有的一切。",
+    gift:"你的天赋是<strong>生存力</strong>。你能在最恶劣的环境里活下来，也能在别人放弃的时候继续往前走。你对目标的执着，是很多人无法想象的。",
+    blind:"太强的控制欲，容易让身边的人喘不过气，也容易因为太警惕而错失信任。",
+    advice:"<strong>只要你学会信任和放松，就能像朱元璋一样，从乞丐走到皇帝，还能守住江山。</strong>你已经赢了最难的那一仗。" },
+  "康熙":{ arche:"B", tag:"少年老成 · 隐忍 · 学习力统治力极强",
+    desc:"你是那种<strong>年纪不大但心思很深</strong>的人。你懂得藏锋，也懂得在合适的时候出手。你的学习能力极强，能快速吸收新东西并转化为自己的优势。",
+    gift:"你的天赋是<strong>隐忍和成长</strong>。你能在别人低估你的时候默默积累，也能在关键时刻一鸣惊人。你的耐心和克制，远超同龄人。",
+    blind:"太早成熟，容易失去一些本该有的轻松，也容易因为太克制而压抑自己。",
+    advice:"<strong>只要你保持这份隐忍和学习力，就能像康熙一样，少年擒鳌拜、平三藩，开创一代盛世。</strong>偶尔也允许自己放松一点。" },
+  "韩信":{ arche:"C", tag:"兵仙 · 军事天才 · 自信到张扬",
+    desc:"你是那种<strong>有真本事、也敢承认自己有本事</strong>的人。你不喜欢藏着掖着，因为你确实能做到别人做不到的事。你的自信不是空话，是打出来的。",
+    gift:"你的天赋是<strong>战略天赋</strong>。你能在复杂的局面中找到最优解，也能用别人想不到的方式赢得胜利。你的能力是稀缺的，你的自信是合理的。",
+    blind:"太张扬，容易招人忌惮，也容易因为太相信自己的能力而忽略人情世故。",
+    advice:"<strong>只要你学会保护自己，就能像韩信一样，从胯下之辱走到兵仙之位，功成名就。</strong>能力毋庸置疑，但真正的赢家还要懂人情。" },
+  "卫青":{ arche:"C", tag:"从奴仆到大将军 · 低调但战功赫赫",
+    desc:"你是那种<strong>不声不响就做成大事</strong>的人。你出身不高，但你靠实力一步步走上来。你不炫耀，不张扬，但你的成绩摆在那里。",
+    gift:"你的天赋是<strong>稳扎稳打</strong>。你不追求一时的风光，你追求的是长期的结果。你能在别人浮躁的时候保持冷静，也能在压力下稳定发挥。",
+    blind:"太低调，容易被人忽略，也容易因为不争而失去应得的东西。",
+    advice:"<strong>只要你该展示时不再客气，就能像卫青一样，从奴仆走到大将军，七战七捷，名垂青史。</strong>" },
+  "霍去病":{ arche:"C", tag:"少年英雄 · 闪电作战 · 锐气冲天",
+    desc:"你是那种<strong>年轻、锐利、无所畏惧</strong>的人。你不喜欢拖泥带水，你相信速度和果断。你的能量是外放的，能感染身边的人。",
+    gift:"你的天赋是<strong>爆发力</strong>。你能在短时间内爆发出惊人的能量，也能在别人还没反应过来时完成目标。你的锐气，是你最大的武器。",
+    blind:"太快太猛，容易忽略细节，也容易因为太年轻而低估风险。",
+    advice:"<strong>只要你学会控制节奏，就能像霍去病一样，十九岁封侯，二十一岁封狼居胥，成为一代传奇。</strong>" },
+  "岳飞":{ arche:"C", tag:"精忠报国 · 刚烈执着 · 军事天才",
+    desc:"你是那种<strong>认准了一件事就绝不回头</strong>的人。你有强烈的信念感，也有极强的执行力。你不怕困难，也不怕牺牲，你怕的是辜负自己的初心。",
+    gift:"你的天赋是<strong>信念力</strong>。你能在最艰难的时候坚持自己的原则，也能带着一群人朝着同一个目标前进。你的刚烈，让人敬佩，也让人心疼。",
+    blind:"太刚，容易折断，也容易因为太执着而忽略变通。",
+    advice:"<strong>只要你学会在坚持中变通，就能像岳飞一样，既精忠报国，也保全自己。</strong>你的信念值得尊敬，但有时候绕个弯也能到达终点。" },
+  "戚继光":{ arche:"C", tag:"纪律严明 · 实战派 · 能打硬仗",
+    desc:"你是那种<strong>务实、严谨、能打硬仗</strong>的人。你不喜欢空谈，你相信纪律和训练。你带的团队，往往是最能打的那一支。",
+    gift:"你的天赋是<strong>组织力</strong>。你能把一群人训练成一支有战斗力的队伍，也能在实战中不断优化方法。你的务实，是你最大的优势。",
+    blind:"太严格，容易让人觉得不近人情，也容易因为太注重规则而失去灵活性。",
+    advice:"<strong>只要你给团队多一点温度，就能像戚继光一样，带出戚家军，扫平倭寇，成为一代名将。</strong>" },
+  "成吉思汗":{ arche:"C", tag:"征服者 · 狼性野心 · 学习能力强",
+    desc:"你是那种<strong>野心极大、行动力极强</strong>的人。你不满足于现状，你想要更大的世界。你学习能力强，能快速吸收不同文化的长处。",
+    gift:"你的天赋是<strong>扩张力</strong>。你能把一个小团队带成一个大帝国，也能在陌生的环境里快速适应。你的野心，是你最大的驱动力。",
+    blind:"太想征服，容易忽略已经拥有的，也容易因为太强势而失去人心。",
+    advice:"<strong>只要你守住已经拥有的，就能像成吉思汗一样，从一个部落走到横跨欧亚的大帝国。</strong>" },
+  "拿破仑":{ arche:"C", tag:"小个子大能量 · 一生都在创造奇迹",
+    desc:"你是那种<strong>不被出身和条件限制</strong>的人。别人觉得不可能的事，你偏要试试。你身上有一种不服输的劲，越是逆境，越能激发你的斗志。",
+    gift:"你的天赋是<strong>逆袭力</strong>。你能在别人不看好的情况下创造奇迹，也能在资源有限时做出惊人的成绩。你的能量，远超你的外表。",
+    blind:"太想证明自己，容易透支自己，也容易因为太激进而翻车。",
+    advice:"<strong>只要你稳一点，就能像拿破仑一样，从科西嘉小岛走到法兰西皇帝，改变整个欧洲。</strong>" },
+  "李白":{ arche:"D", tag:"诗仙 · 浪漫洒脱 · 自信带醉意",
+    desc:"你是那种<strong>活得很有感觉</strong>的人。你不喜欢被规则束缚，更愿意按自己的节奏来。你有才华，也有自信，还带一点可爱的傲气。",
+    gift:"你的天赋是<strong>感染力</strong>。你能把平淡的生活过出诗意，也能用自己的热情感染身边的人。你的洒脱，是很多人羡慕却学不来的。",
+    blind:"太随性，容易缺乏稳定性，也容易因为太在意感受而忽略现实。",
+    advice:"<strong>只要你给才华加一点纪律，就能像李白一样，写下半个盛唐，成为千古诗仙。</strong>" },
+  "杜甫":{ arche:"D", tag:"诗圣 · 忧国忧民 · 情感深沉",
+    desc:"你是那种<strong>心里装着很多人</strong>的人。你不只关心自己，你在意的是更大的东西。你的情感很深，也很真，能打动人心。",
+    gift:"你的天赋是<strong>共情力</strong>。你能感受到别人的痛苦，也能把这种感受转化成有力量的作品。你的深度，是很多人达不到的。",
+    blind:"太容易共情，容易让自己背负太多，也容易因为太沉重而忽略自己的快乐。",
+    advice:"<strong>只要你照顾好自己，就能像杜甫一样，写出诗史，成为后人敬仰的诗圣。</strong>关心世界很重要，但别忘了自己。" },
+  "苏轼":{ arche:"D", tag:"豁达多才 · 会吃会写 · 逆境开花",
+    desc:"你是那种<strong>无论遇到什么都能活得很好</strong>的人。你多才多艺，也懂得享受生活。你身上有一种豁达的力量，能在逆境里开出花来。",
+    gift:"你的天赋是<strong>韧性+才华</strong>。你不只是有才，你还有一颗强大的心。你能把苦难变成养分，把经历变成作品。这种能力，极其珍贵。",
+    blind:"太豁达，有时会让人觉得你不够认真，也容易因为太随和而忽略一些该争取的东西。",
+    advice:"<strong>只要你该认真时也认真，就能像苏轼一样，无论被贬到哪里，都能活出精彩，留下千古名篇。</strong>" },
+  "陶渊明":{ arche:"D", tag:"田园诗人 · 淡泊名利 · 爱自然",
+    desc:"你是那种<strong>不被世俗标准绑架</strong>的人。你不追求名利，你追求的是内心的自由。你懂得在简单的生活里找到真正的快乐。",
+    gift:"你的天赋是<strong>自洽力</strong>。你能在别人追逐的时候停下来，也能在简单中找到满足。你的淡泊，是一种高级的智慧。",
+    blind:"太淡泊，容易错过一些本可以拥有的机会，也容易让别人觉得你不够上进。",
+    advice:"<strong>只要你确保自己有选择的能力，就能像陶渊明一样，采菊东篱下，悠然见南山。</strong>" },
+  "王羲之":{ arche:"D", tag:"书圣 · 风骨极盛 · 艺术气质浓",
+    desc:"你是那种<strong>对美有极致追求</strong>的人。你在意细节，在意质感，在意作品能不能经得起时间。你的艺术气质，是刻在骨子里的。",
+    gift:"你的天赋是<strong>审美力</strong>。你能看出别人看不出的美，也能把这种美表达出来。你的作品，往往能穿越时间。",
+    blind:"太追求完美，容易反复打磨而错过时机，也容易因为太在意细节而忽略全局。",
+    advice:"<strong>只要你该完成时先完成，就能像王羲之一样，写下兰亭序，成为千古书圣。</strong>完成比完美更重要。" },
+  "唐伯虎":{ arche:"D", tag:"风流才子 · 聪明狂放 · 带落魄感",
+    desc:"你是那种<strong>聪明、有趣、但命运有点捉弄</strong>的人。你有才华，也有个性，但现实往往不如人意。你的狂放背后，藏着一些不甘。",
+    gift:"你的天赋是<strong>才华+个性</strong>。你不只是聪明，你还很有辨识度。你的作品和你的为人一样，让人过目不忘。",
+    blind:"太有个性，容易在现实面前碰壁，也容易因为太在意别人的看法而内耗。",
+    advice:"<strong>只要你找到懂你的人，就能像唐伯虎一样，哪怕命运多舛，也留下风流才子的千古名声。</strong>" },
+  "李清照":{ arche:"D", tag:"才女 · 敏感有风骨 · 词中之凤",
+    desc:"你是那种<strong>敏感、细腻、有风骨</strong>的人。你对情感的感受比大多数人深，对美和丑的判断也比大多数人准。你不随波逐流，你有自己的标准。",
+    gift:"你的天赋是<strong>感受力</strong>。你能捕捉到别人忽略的情绪，也能把这种情绪转化成动人的表达。你的细腻，是你的力量。",
+    blind:"太敏感，容易受伤，也容易因为太在意细节而陷入情绪。",
+    advice:"<strong>只要你给自己建一道保护墙，就能像李清照一样，写下千古第一才女的词章。</strong>" },
+  "老子":{ arche:"E", tag:"道家始祖 · 讲无为讲规律 · 神秘深远",
+    desc:"你是那种<strong>看得比大多数人远</strong>的人。你不追逐表面的热闹，你关注的是底层的规律。你懂得顺势而为，也懂得什么时候该停。",
+    gift:"你的天赋是<strong>洞察规律</strong>。你能在复杂中看到简单，在变化中找到不变。你的通透，让你不容易被短期得失困住。",
+    blind:"太通透，容易显得疏离，也容易因为太顺其自然而缺乏行动力。",
+    advice:"<strong>只要你在顺势中主动创造势，就能像老子一样，留下五千言，影响中国两千年。</strong>" },
+  "孔子":{ arche:"E", tag:"儒家宗师 · 讲秩序仁义 · 修身",
+    desc:"你是那种<strong>有原则、有秩序感</strong>的人。你相信规则和修养的力量，也愿意为理想付出长期努力。你不追求速成，你追求的是扎实。",
+    gift:"你的天赋是<strong>教化力</strong>。你能把复杂的道理讲清楚，也能用自己的言行影响别人。你的坚持，能改变很多人。",
+    blind:"太讲秩序，容易显得刻板，也容易因为太注重规则而忽略个例。",
+    advice:"<strong>只要你给人情留一点空间，就能像孔子一样，弟子三千，成为万世师表。</strong>" },
+  "庄子":{ arche:"E", tag:"逍遥自由 · 想象力极强 · 不爱束缚",
+    desc:"你是那种<strong>想象力极强、不爱被束缚</strong>的人。你不喜欢按部就班，你更喜欢自由地思考、自由地生活。你的精神世界，比大多数人丰富。",
+    gift:"你的天赋是<strong>想象力</strong>。你能跳出常规思考问题，也能用独特的视角看待世界。你的自由，是一种稀缺的能力。",
+    blind:"太自由，容易缺乏落地能力，也容易因为太超脱而忽略现实。",
+    advice:"<strong>只要你让想象力落地，就能像庄子一样，用寓言和哲思，影响后世两千年。</strong>" },
+  "王阳明":{ arche:"E", tag:"心学大师 · 知行合一 · 内心强大",
+    desc:"你是那种<strong>想明白就去做</strong>的人。你不喜欢空谈，你相信行动才是检验认知的标准。你的内心很强大，不容易被外界动摇。",
+    gift:"你的天赋是<strong>知行合一</strong>。你不只是有想法，你还能把想法落地。你能在复杂的环境中保持清醒，也能在压力下坚持自己的判断。",
+    blind:"太强调行动，有时会忽略别人的节奏，也容易因为太坚定而显得不够包容。",
+    advice:"<strong>只要你给别人一点时间，就能像王阳明一样，立德立功立言，成为一代心学宗师。</strong>" },
+  "曾国藩":{ arche:"E", tag:"笨人成才 · 靠坚持自省自律逆袭",
+    desc:"你是那种<strong>不靠天赋靠坚持</strong>的人。你未必是最聪明的，但你一定是最能扛的。你懂得自省，也懂得自律，你相信日积月累的力量。",
+    gift:"你的天赋是<strong>自律力</strong>。你能在别人放弃的时候继续坚持，也能在别人浮躁的时候保持专注。你的成长，是复利式的。",
+    blind:"太严格要求自己，容易内耗，也容易因为太自律而失去一些生活的乐趣。",
+    advice:"<strong>只要你允许自己偶尔放松，就能像曾国藩一样，从笨人走到中兴名臣，成为一代完人。</strong>" },
+  "弘一法师":{ arche:"E", tag:"从繁华到极简 · 人生态度极通透",
+    desc:"你是那种<strong>经历过繁华，最终选择简单</strong>的人。你看过世界的热闹，也懂得安静的珍贵。你的人生，是一场从外到内的修行。",
+    gift:"你的天赋是<strong>放下力</strong>。你能在别人执着的时候放手，也能在复杂中找到简单。你的通透，是经历过之后的通透。",
+    blind:"太早放下，容易让人觉得你不够投入，也容易因为太超脱而失去一些体验。",
+    advice:"<strong>只要你该经历时好好经历，就能像弘一法师一样，从李叔同走到弘一法师，完成一生的修行。</strong>" },
+  "刘备":{ arche:"F", tag:"仁德之主 · 爱哭也会用人 · 能聚人心",
+    desc:"你是那种<strong>靠人心赢天下</strong>的人。你不一定最能打，也不一定最聪明，但你一定最让人愿意跟随。你的仁厚，不是软弱，是一种高级的领导力。",
+    gift:"你的天赋是<strong>凝聚力</strong>。你能让不同的人愿意为你所用，也能在困难的时候稳住人心。你的真诚，是你最大的武器。",
+    blind:"太重感情，容易在关键决策上犹豫，也容易因为太顾别人而委屈自己。",
+    advice:"<strong>只要你该果断时也果断，就能像刘备一样，从卖草鞋走到三分天下，让诸葛亮、关羽都为你所用。</strong>" },
+  "刘秀":{ arche:"F", tag:"东汉光武帝 · 宽厚 · 会打仗也会做人",
+    desc:"你是那种<strong>既能打又能处</strong>的人。你不只是有能力，你还有胸怀。你能在战场上赢，也能在人际关系上赢。你的宽厚，让人愿意靠近。",
+    gift:"你的天赋是<strong>平衡力</strong>。你能在强硬和柔软之间找到平衡，也能在利益和感情之间做出正确的选择。这种能力，极其难得。",
+    blind:"太宽厚，容易被人利用，也容易因为太顾全大局而委屈自己。",
+    advice:"<strong>只要你学会识别不值得的人，就能像刘秀一样，从乱世中崛起，开创光武中兴。</strong>" },
+  "宋江":{ arche:"F", tag:"及时雨 · 仗义疏财 · 江湖人望极高",
+    desc:"你是那种<strong>朋友很多、人缘很好</strong>的人。你仗义，你舍得，你愿意在别人需要的时候伸出援手。你的江湖地位，是靠真心换来的。",
+    gift:"你的天赋是<strong>人脉力</strong>。你能结交各种各样的人，也能在关键时刻调动资源。你的义气，是你最大的资产。",
+    blind:"太仗义，容易被人情绑架，也容易因为太重感情而做出不理性的决定。",
+    advice:"<strong>只要你给自己留一点余地，就能像宋江一样，成为梁山之主，让一百单八将为你所用。</strong>" },
+  "孟尝君":{ arche:"F", tag:"战国四公子 · 门客三千 · 舍得养人",
+    desc:"你是那种<strong>舍得投入、愿意养人</strong>的人。你相信人才的价值，也愿意为长期关系付出。你的格局，不是一般人能比的。",
+    gift:"你的天赋是<strong>养人能力</strong>。你能看出一个人的潜力，也愿意给他时间和资源。你的投入，最后往往会有意想不到的回报。",
+    blind:"太舍得，容易被人当成冤大头，也容易因为太信任而看错人。",
+    advice:"<strong>只要你学会筛选值得投入的人，就能像孟尝君一样，门客三千，关键时刻有人为你挺身而出。</strong>" },
+  "信陵君":{ arche:"F", tag:"礼贤下士 · 重情重义 · 有公子气",
+    desc:"你是那种<strong>重情重义、有贵族气</strong>的人。你看重的是情义，不是利益。你愿意为朋友两肋插刀，也愿意为原则付出代价。",
+    gift:"你的天赋是<strong>感召力</strong>。你能让有才的人愿意追随你，也能在关键时刻得到别人的帮助。你的情义，是你的无形资产。",
+    blind:"太重情义，容易被人利用，也容易因为太讲义气而忽略现实。",
+    advice:"<strong>只要你学会保护自己，就能像信陵君一样，窃符救赵，成为战国四公子中最耀眼的那一个。</strong>" },
+  "周公旦":{ arche:"F", tag:"周朝圣人 · 忠诚贤德 · 稳重",
+    desc:"你是那种<strong>忠诚、稳重、值得托付</strong>的人。你不抢功，不越位，你把自己的事做到最好。你的可靠，是很多人一辈子都学不来的。",
+    gift:"你的天赋是<strong>托付力</strong>。别人愿意把重要的事交给你，因为知道你靠得住。你的稳重，是团队里最稀缺的品质。",
+    blind:"太稳重，容易显得保守，也容易因为太顾全大局而忽略自己的需求。",
+    advice:"<strong>只要你学会为自己争取，就能像周公旦一样，辅佐成王，制礼作乐，成为一代圣人。</strong>" },
+  "范仲淹":{ arche:"F", tag:"先天下之忧而忧 · 有理想也有担当",
+    desc:"你是那种<strong>有理想、有担当</strong>的人。你不只关心自己，你在意的是更大的东西。你愿意为理想付出，也愿意为别人承担责任。",
+    gift:"你的天赋是<strong>担当力</strong>。你能在别人退缩的时候站出来，也能在困难的时候扛起责任。你的格局，让人敬佩。",
+    blind:"太有担当，容易让自己背负太多，也容易因为太顾别人而忽略自己。",
+    advice:"<strong>只要你学会照顾自己，就能像范仲淹一样，先天下之忧而忧，后天下之乐而乐，成为千古名臣。</strong>" },
+  "勾践":{ arche:"G", tag:"卧薪尝胆 · 隐忍到极致 · 最后翻盘",
+    desc:"你是那种<strong>能忍别人不能忍</strong>的人。你受过屈辱，但你没有被击垮。你把痛苦变成动力，把隐忍变成武器。你的翻盘，是必然的。",
+    gift:"你的天赋是<strong>忍辱负重</strong>。你能在最黑暗的时候保持清醒，也能在别人放松的时候继续积蓄力量。你的韧性，是很多人无法想象的。",
+    blind:"太能忍，容易内耗，也容易因为太压抑而失去一些本该有的快乐。",
+    advice:"<strong>只要你在该出手时不再犹豫，就能像勾践一样，卧薪尝胆二十年，最终灭吴称霸。</strong>" },
+  "司马懿":{ arche:"G", tag:"三国最大忍者 · 活得久忍得狠",
+    desc:"你是那种<strong>能等、能熬、能笑到最后</strong>的人。你不急着证明自己，你相信时间会站在你这边。你的耐心，是一种恐怖的武器。",
+    gift:"你的天赋是<strong>战略耐心</strong>。你能在别人焦躁的时候保持冷静，也能在别人放弃的时候继续等待。你的隐忍，是为了更大的胜利。",
+    blind:"太能忍，容易让人觉得你不够真诚，也容易因为太算计而失去一些温度。",
+    advice:"<strong>只要你让人看到你的真心，就能像司马懿一样，熬过曹操、曹丕、曹叡三代，最终成为三国最大的赢家。</strong>" },
+  "朱棣":{ arche:"G", tag:"燕王起兵 · 野心极大 · 也能赌命",
+    desc:"你是那种<strong>敢赌、敢拼、敢造反</strong>的人。你不甘心屈居人下，你想要的是最高的位置。你的野心，写在脸上。",
+    gift:"你的天赋是<strong>破局力</strong>。你能在别人觉得不可能的情况下找到机会，也能在绝境中杀出一条血路。你的胆量，让人震撼。",
+    blind:"太激进，容易树敌，也容易因为太想赢而忽略风险。",
+    advice:"<strong>只要你学会控制节奏，就能像朱棣一样，从燕王走到永乐大帝，迁都北京，七下西洋。</strong>" },
+  "皇太极":{ arche:"G", tag:"城府深 · 会用人 · 忍到最后",
+    desc:"你是那种<strong>城府深、心思细</strong>的人。你不急着出手，你更喜欢在暗中布局。你懂得用人，也懂得等待。你的成功，是精心设计的结果。",
+    gift:"你的天赋是<strong>布局力</strong>。你能在别人看不到的地方下棋，也能在关键时刻一击必中。你的城府，是你的护城河。",
+    blind:"太深藏不露，容易让人觉得你有距离感，也容易因为太算计而失去真诚。",
+    advice:"<strong>只要你让人看到你的真心，就能像皇太极一样，继承努尔哈赤的事业，为大清入关奠定基础。</strong>" },
+  "范蠡":{ arche:"G", tag:"辅佐越王 · 全身而退 · 智商情商都高",
+    desc:"你是那种<strong>既能成事、又能全身而退</strong>的人。你懂得什么时候该进，什么时候该退。你不贪恋权力，也不沉迷名利。你的智慧，是全面的。",
+    gift:"你的天赋是<strong>进退自如</strong>。你能在事业巅峰时选择离开，也能在另一条路上重新开始。你的智慧，不只在谋略，更在人生。",
+    blind:"太懂得退，容易让人觉得你不够投入，也容易因为太清醒而失去一些热血。",
+    advice:"<strong>只要你该投入时全情投入，就能像范蠡一样，辅佐勾践灭吴，又能功成身退，成为一代商圣。</strong>" },
+  "虞舜":{ arche:"G", tag:"传说中的贤君 · 以德报怨 · 慢慢上位",
+    desc:"你是那种<strong>以德报怨、慢慢上位</strong>的人。你不急，不争，你用时间和行动证明自己。你的善良，不是软弱，是一种长期主义。",
+    gift:"你的天赋是<strong>以德服人</strong>。你能在别人对你不好时依然保持善意，也能在长期的坚持中赢得人心。你的品德，是你的底牌。",
+    blind:"太善良，容易被人欺负，也容易因为太忍让而错失机会。",
+    advice:"<strong>只要你学会保护自己，就能像虞舜一样，从被家人迫害的普通人，走到华夏共主的位置。</strong>" },
+  "晋文公":{ arche:"G", tag:"流亡多年 · 回国称霸 · 大器晚成",
+    desc:"你是那种<strong>大器晚成</strong>的人。你经历过流亡，经历过低谷，但你从未放弃。你的成功，来得晚，但来得稳。",
+    gift:"你的天赋是<strong>厚积薄发</strong>。你能在漫长的低谷中积累力量，也能在机会来临时一举成功。你的经历，是你最大的财富。",
+    blind:"太能等，容易错过一些本该属于你的机会，也容易因为太谨慎而显得不够果断。",
+    advice:"<strong>只要你在该出手时果断出手，就能像晋文公一样，流亡十九年后回国称霸，成为春秋五霸之一。</strong>" },
+  "鬼谷子":{ arche:"H", tag:"神秘纵横家 · 教出苏秦张仪等奇才",
+    desc:"你是那种<strong>神秘、深不可测</strong>的人。你不轻易展示自己，但你的影响力极大。你擅长看透人心，也擅长教别人看透人心。",
+    gift:"你的天赋是<strong>识人力</strong>。你能在几句话之间看透一个人的本质，也能根据不同的对象调整沟通方式。你的洞察力，是顶级水平。",
+    blind:"太神秘，容易让人觉得你有距离感，也容易因为太会算计而失去真诚。",
+    advice:"<strong>只要你让人看到你的真心，就能像鬼谷子一样，教出苏秦、张仪，影响整个战国格局。</strong>" },
+  "鲁班":{ arche:"H", tag:"工匠始祖 · 动手能力和创造力极强",
+    desc:"你是那种<strong>动手能力强、创造力爆棚</strong>的人。你不喜欢空谈，你喜欢做出实物。你的手，比你的嘴更能表达你的想法。",
+    gift:"你的天赋是<strong>创造力+执行力</strong>。你能把想法变成实物，也能在不断尝试中优化方案。你的动手能力，是很多人学不来的。",
+    blind:"太专注技术，容易忽略人际关系，也容易因为太沉浸而忽略外界变化。",
+    advice:"<strong>只要你学会让别人看到你的价值，就能像鲁班一样，成为工匠始祖，留下影响千年的发明。</strong>" },
+  "张衡":{ arche:"H", tag:"科学家文学家 · 懂天文也懂发明",
+    desc:"你是那种<strong>既懂科学又懂艺术</strong>的人。你好奇心强，兴趣广泛，能在不同领域都有建树。你的思维，是跨界的。",
+    gift:"你的天赋是<strong>跨界力</strong>。你能把不同领域的知识融会贯通，也能用别人想不到的方式解决问题。你的好奇心，是你最大的驱动力。",
+    blind:"兴趣太广，容易分散精力，也容易因为太追求新事物而忽略深耕。",
+    advice:"<strong>只要你有一个深耕的主战场，就能像张衡一样，发明地动仪，写下二京赋，成为一代全才。</strong>" },
+  "华佗":{ arche:"H", tag:"神医 · 医术高 · 也有冒险精神",
+    desc:"你是那种<strong>专业能力极强、也愿意冒险</strong>的人。你在自己的领域里是顶尖的，但你也不满足于常规，你愿意尝试新的方法。",
+    gift:"你的天赋是<strong>专业+创新</strong>。你不只是懂专业，你还能在专业基础上创新。你的能力，能解决别人解决不了的问题。",
+    blind:"太冒险，容易忽略风险，也容易因为太自信而低估困难。",
+    advice:"<strong>只要你给自己留一条退路，就能像华佗一样，成为一代神医，留下麻沸散和五禽戏。</strong>" },
+  "袁天罡":{ arche:"H", tag:"玄学奇人 · 看相风水 · 预言感强",
+    desc:"你是那种<strong>直觉极强、能感知别人感知不到的东西</strong>的人。你对神秘的事物有天然兴趣，也有一套自己的判断体系。",
+    gift:"你的天赋是<strong>直觉力</strong>。你能在别人还没察觉的时候感知到变化，也能用独特的方式理解世界。你的直觉，是你的导航。",
+    blind:"太依赖直觉，容易缺乏逻辑支撑，也容易因为太神秘而难以被理解。",
+    advice:"<strong>只要你用逻辑来验证直觉，就能像袁天罡一样，推背图预言千年，成为一代玄学宗师。</strong>" },
+  "李淳风":{ arche:"H", tag:"天文历算奇才 · 神秘又理性",
+    desc:"你是那种<strong>既神秘又理性</strong>的人。你对玄学有兴趣，但你更相信数据和规律。你能在神秘和科学之间找到平衡。",
+    gift:"你的天赋是<strong>理性洞察</strong>。你能用数据和规律解释别人觉得神秘的现象，也能在复杂中找到秩序。你的理性，是你的武器。",
+    blind:"太理性，容易显得冷淡，也容易因为太追求精确而忽略感性。",
+    advice:"<strong>只要你给感性留一点空间，就能像李淳风一样，既懂天文历算，又参与推背图，成为一代奇人。</strong>" },
+  "东方朔":{ arche:"H", tag:"汉武帝身边的搞笑奇人 · 聪明得很另类",
+    desc:"你是那种<strong>聪明得很另类</strong>的人。你不按常理出牌，喜欢用幽默的方式表达深刻的想法。你的聪明，藏在玩笑里。",
+    gift:"你的天赋是<strong>幽默+智慧</strong>。你能用轻松的方式说出别人不敢说的话，也能在娱乐中传递有价值的信息。你的另类，是你的标识。",
+    blind:"太爱开玩笑，容易让人觉得你不够认真，也容易因为太另类而被误解。",
+    advice:"<strong>只要你让人看到你的深度，就能像东方朔一样，在汉武帝身边既能搞笑又能进谏，成为一代奇人。</strong>" }
+};
+
+const radarLabels = ["谋略","决断","行动","才情","通透","仁厚","隐忍","奇思"];
+
+/* ================= 状态 ================= */
+let current = 0;
+let answers = [];
+let scores = {A:0,B:0,C:0,D:0,E:0,F:0,G:0,H:0};
+let lastResult = null;
+let locked = false;
+
+function startTest() {
+  questions = buildQuestions();
+  current = 0;
+  answers = [];
+  scores = {A:0,B:0,C:0,D:0,E:0,F:0,G:0,H:0};
+  locked = false;
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  locked = false;
+  const q = questions[current];
+  document.getElementById('sceneTag').textContent = "【" + q.scene + "】";
+  document.getElementById('questionText').textContent = `${current+1}. ${q.q}`;
+  const optsEl = document.getElementById('options');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt,i)=>{
+    const div = document.createElement('div');
+    div.className = 'option';
+    if (answers[current] === i) div.classList.add('selected');
+    div.textContent = opt.t;
+    div.onclick = ()=>selectOption(i,div);
+    optsEl.appendChild(div);
+  });
+  document.getElementById('progress').style.width = `${(current/questions.length)*100}%`;
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  const nextBtn = document.getElementById('nextBtn');
+  // 下一题按钮：始终可点（不看是否有答案）
+  nextBtn.disabled = false;
+  if (current === questions.length - 1) {
+    nextBtn.textContent = '查看结果';
+  } else {
+    nextBtn.textContent = '下一题';
+  }
+}
+
+function selectOption(index, el) {
+  if (locked) return;
+  locked = true;
+  document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[current] = index;
+
+  setTimeout(() => {
+    locked = false;
+    if (current < questions.length - 1) {
+      current++;
+      renderQuestion();
+    } else {
+      // 最后一题，停留在本题，让用户点「查看结果」
+      document.getElementById('nextBtn').textContent = '查看结果';
+    }
+  }, 280);
+}
+
+function prevQuestion() {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+}
+
+function nextQuestionManual() {
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    calcScores();
+    showResult();
+  }
+}
+
+function calcScores() {
+  scores = {A:0,B:0,C:0,D:0,E:0,F:0,G:0,H:0};
+  for (let i = 0; i < questions.length; i++) {
+    if (answers[i] === undefined) continue;
+    const opt = questions[i].opts[answers[i]];
+    for (const k in opt.s) scores[k] += opt.s[k];
+  }
+}
+
+/* ================= 雷达图 ================= */
+function drawRadar(canvas, values) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const size = 260;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  ctx.scale(dpr, dpr);
+
+  const cx = size/2, cy = size/2, R = 88;
+  const n = values.length;
+  const maxV = Math.max(...values, 1);
+
+  ctx.strokeStyle = 'rgba(240,194,127,0.18)';
+  ctx.lineWidth = 1;
+  for (let ring = 1; ring <= 4; ring++) {
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const ang = -Math.PI/2 + (i%n) * 2*Math.PI/n;
+      const r = R * ring/4;
+      const x = cx + r*Math.cos(ang);
+      const y = cy + r*Math.sin(ang);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI/2 + i*2*Math.PI/n;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+R*Math.cos(ang), cy+R*Math.sin(ang));
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const idx = i % n;
+    const ang = -Math.PI/2 + idx*2*Math.PI/n;
+    const r = R * (values[idx]/maxV);
+    const x = cx + r*Math.cos(ang);
+    const y = cy + r*Math.sin(ang);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0,0,size,size);
+  grad.addColorStop(0,'rgba(240,194,127,0.45)');
+  grad.addColorStop(1,'rgba(252,92,125,0.45)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = '#f0c27f';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI/2 + i*2*Math.PI/n;
+    const r = R * (values[i]/maxV);
+    const x = cx + r*Math.cos(ang);
+    const y = cy + r*Math.sin(ang);
+    ctx.beginPath();
+    ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle = '#fc5c7d';
+    ctx.fill();
+  }
+  ctx.fillStyle = '#c9b896';
+  ctx.font = '12px -apple-system,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI/2 + i*2*Math.PI/n;
+    const x = cx + (R+20)*Math.cos(ang);
+    const y = cy + (R+20)*Math.sin(ang);
+    ctx.fillText(radarLabels[i], x, y);
+  }
+}
+
+/* ================= 选人 ================= */
+function pickPerson(topKey, answers) {
+  const map = {
+    A:[
+      { name:"姜子牙", match:q=>q[9]===0 },
+      { name:"张良", match:q=>q[13]===2 },
+      { name:"郭嘉", match:q=>q[7]===0 },
+      { name:"荀彧", match:q=>q[4]===2 },
+      { name:"刘伯温", match:q=>q[2]===1 },
+      { name:"诸葛亮", match:q=>q[1]===0 },
+      { name:"范文程", match:()=>true }
+    ],
+    B:[
+      { name:"秦始皇", match:q=>q[13]===1 },
+      { name:"刘邦", match:q=>q[4]===1 },
+      { name:"曹操", match:q=>q[0]===1 },
+      { name:"李世民", match:q=>q[17]===1 },
+      { name:"武则天", match:q=>q[15]===1 },
+      { name:"朱元璋", match:q=>q[14]===1 },
+      { name:"康熙", match:()=>true }
+    ],
+    C:[
+      { name:"韩信", match:q=>q[10]===1 },
+      { name:"卫青", match:q=>q[10]===2 },
+      { name:"霍去病", match:q=>q[5]===1 },
+      { name:"岳飞", match:q=>q[19]===1 },
+      { name:"戚继光", match:q=>q[10]===0 },
+      { name:"成吉思汗", match:q=>q[21]===1 },
+      { name:"拿破仑", match:()=>true }
+    ],
+    D:[
+      { name:"李白", match:q=>q[2]===0 },
+      { name:"杜甫", match:q=>q[19]===3 },
+      { name:"苏轼", match:q=>q[2]===3 },
+      { name:"陶渊明", match:q=>q[18]===3 },
+      { name:"王羲之", match:q=>q[6]===0 },
+      { name:"唐伯虎", match:q=>q[16]===0 },
+      { name:"李清照", match:()=>true }
+    ],
+    E:[
+      { name:"老子", match:q=>q[9]===3 },
+      { name:"孔子", match:q=>q[12]===0 },
+      { name:"庄子", match:q=>q[12]===1 },
+      { name:"王阳明", match:q=>q[12]===2 },
+      { name:"曾国藩", match:q=>q[8]===2 },
+      { name:"弘一法师", match:q=>q[20]===3 },
+      { name:"诸葛亮", match:()=>true }
+    ],
+    F:[
+      { name:"刘备", match:q=>q[13]===3 },
+      { name:"刘秀", match:q=>q[21]===2 },
+      { name:"宋江", match:q=>q[14]===0 },
+      { name:"孟尝君", match:q=>q[3]===2 },
+      { name:"信陵君", match:q=>q[16]===2 },
+      { name:"周公旦", match:q=>q[1]===2 },
+      { name:"范仲淹", match:()=>true }
+    ],
+    G:[
+      { name:"勾践", match:q=>q[9]===0 },
+      { name:"司马懿", match:q=>q[0]===3 },
+      { name:"朱棣", match:q=>q[21]===2 },
+      { name:"皇太极", match:q=>q[11]===2 },
+      { name:"范蠡", match:q=>q[13]===2 },
+      { name:"虞舜", match:q=>q[14]===0 },
+      { name:"晋文公", match:()=>true }
+    ],
+    H:[
+      { name:"鬼谷子", match:q=>q[3]===3 },
+      { name:"鲁班", match:q=>q[16]===3 },
+      { name:"张衡", match:q=>q[12]===3 },
+      { name:"华佗", match:q=>q[14]===3 },
+      { name:"袁天罡", match:q=>q[21]===3 },
+      { name:"李淳风", match:q=>q[21]===0 },
+      { name:"东方朔", match:()=>true }
+    ]
+  };
+  const list = map[topKey] || [];
+  for (const p of list) {
+    if (p.match(answers)) return p.name;
+  }
+  return list[list.length-1]?.name || "曹操";
+}
+
+/* ================= 结果 ================= */
+function showResult() {
+  document.getElementById('quiz').classList.add('hidden');
+  const resultEl = document.getElementById('result');
+  resultEl.classList.add('show');
+
+  let topKey = 'A', topScore = -1;
+  for (const k in scores) if (scores[k] > topScore) { topScore = scores[k]; topKey = k; }
+
+  const personName = pickPerson(topKey, answers);
+  const person = PEOPLE[personName];
+  const archeName = archetypes[topKey].name;
+
+  const rawVals = ['A','B','C','D','E','F','G','H'].map(k=>scores[k]);
+  const maxRaw = Math.max(...rawVals, 1);
+  const radarVals = rawVals.map(v => Math.round(v/maxRaw*100));
+
+  lastResult = { personName, person, archeName, radarVals };
+
+  resultEl.innerHTML = `
+    <div class="hero-card">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+      <div class="hero-inner">
+        <div class="hero-name">${personName}</div>
+        <div class="hero-tag">${person.tag}</div>
+        <div class="hero-divider"><span></span><i></i><span></span></div>
+        <div class="hero-arche">人格原型 · ${archeName}</div>
+      </div>
+    </div>
+
+    <div class="radar-wrap">
+      <div class="radar-title">你的 8 维特质雷达</div>
+      <canvas id="radarCanvas"></canvas>
+    </div>
+
+    <div class="card card-gold">
+      <h3>性格匹配</h3>
+      <p>${person.desc}</p>
+    </div>
+
+    <div class="card card-blue">
+      <h3>你的天赋</h3>
+      <p>${person.gift}</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card card-pink">
+        <h3>盲区</h3>
+        <p>${person.blind}</p>
+      </div>
+      <div class="card card-green">
+        <h3>成功路径</h3>
+        <p>${person.advice}</p>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="action-btn action-share" onclick="generateShare()">生成分享卡片</button>
+      <button class="action-btn action-restart" onclick="restart()">再测一次</button>
+    </div>
+  `;
+
+  drawRadar(document.getElementById('radarCanvas'), radarVals);
+}
+
+/* ================= 分享卡片（二维码右下角） ================= */
+function generateShare() {
+  if (!lastResult) return;
+  const { personName, person, archeName, radarVals } = lastResult;
+
+  const W = 750, H = 1350;
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const bgGrad = ctx.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0,'#1a1a2e');
+  bgGrad.addColorStop(0.5,'#16213e');
+  bgGrad.addColorStop(1,'#0a0a14');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0,0,W,H);
+
+  const glow = ctx.createRadialGradient(W/2, 200, 0, W/2, 200, 500);
+  glow.addColorStop(0,'rgba(240,194,127,0.25)');
+  glow.addColorStop(1,'rgba(240,194,127,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0,0,W,600);
+
+  ctx.fillStyle = '#9aa5b1';
+  ctx.font = '22px -apple-system,"PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('你和历史哪位名人比较像？', W/2, 90);
+
+  const nameGrad = ctx.createLinearGradient(W/2-200,0,W/2+200,0);
+  nameGrad.addColorStop(0,'#f0c27f');
+  nameGrad.addColorStop(0.5,'#ffe4a8');
+  nameGrad.addColorStop(1,'#fc5c7d');
+  ctx.fillStyle = nameGrad;
+  ctx.font = 'bold 88px -apple-system,"PingFang SC",sans-serif';
+  ctx.fillText(personName, W/2, 200);
+
+  ctx.fillStyle = '#f0c27f';
+  ctx.font = '24px -apple-system,"PingFang SC",sans-serif';
+  ctx.fillText(person.tag, W/2, 250);
+
+  ctx.strokeStyle = 'rgba(240,194,127,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W/2-160, 280);
+  ctx.lineTo(W/2+160, 280);
+  ctx.stroke();
+
+  ctx.fillStyle = '#c9b896';
+  ctx.font = '22px -apple-system,"PingFang SC",sans-serif';
+  ctx.fillText('人格原型 · ' + archeName, W/2, 320);
+
+  ctx.fillStyle = '#f0c27f';
+  ctx.font = '20px -apple-system,"PingFang SC",sans-serif';
+  ctx.fillText('8 维特质雷达', W/2, 375);
+
+  drawRadarOnCanvas(ctx, W/2, 540, 150, radarVals);
+
+  const lines = [
+    { title:'性格匹配', text: stripTags(person.desc).slice(0, 60) + '…' },
+    { title:'你的天赋', text: stripTags(person.gift).slice(0, 60) + '…' },
+    { title:'成功路径', text: stripTags(person.advice).slice(0, 80) + '…' }
+  ];
+
+  let y = 780;
+  lines.forEach(line => {
+    ctx.fillStyle = '#f0c27f';
+    ctx.font = 'bold 22px -apple-system,"PingFang SC",sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(line.title, 80, y);
+
+    ctx.fillStyle = '#d0d6dc';
+    ctx.font = '20px -apple-system,"PingFang SC",sans-serif';
+    const maxWidth = W - 160;
+    const words = line.text.split('');
+    let curLine = '';
+    let lineY = y + 34;
+    for (const ch of words) {
+      const test = curLine + ch;
+      if (ctx.measureText(test).width > maxWidth) {
+        ctx.fillText(curLine, 80, lineY);
+        curLine = ch;
+        lineY += 30;
+      } else {
+        curLine = test;
+      }
+    }
+    if (curLine) ctx.fillText(curLine, 80, lineY);
+    y = lineY + 50;
+  });
+
+  /* ===== 二维码区域：右下角 ===== */
+  const qrSize = 130;
+  const qrMargin = 30;                    // 距右下角边距
+  const qrX = W - qrSize - qrMargin;      // 右下角 x
+  const qrY = H - qrSize - qrMargin - 30; // 右下角 y（再上移一点给文字）
+
+  // 二维码白底
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 10);
+  ctx.fill();
+
+  if (QR_IMG_URL) {
+    const qrImg = new Image();
+    qrImg.crossOrigin = 'anonymous';
+    qrImg.onload = () => {
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+      drawShareFooter(ctx, W, H);
+      finishShare(canvas);
+    };
+    qrImg.onerror = () => {
+      drawQRPlaceholder(ctx, qrX, qrY, qrSize);
+      drawShareFooter(ctx, W, H);
+      finishShare(canvas);
+    };
+    qrImg.src = QR_IMG_URL;
+    return;
+  } else {
+    drawQRPlaceholder(ctx, qrX, qrY, qrSize);
+  }
+
+  drawShareFooter(ctx, W, H);
+  finishShare(canvas);
+}
+
+function drawShareFooter(ctx, W, H) {
+  // 二维码右侧提示文字（右下角区域）
+  const qrSize = 130;
+  const qrMargin = 30;
+  const qrX = W - qrSize - qrMargin;
+  const qrY = H - qrSize - qrMargin - 30;
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#f0c27f';
+  ctx.font = 'bold 20px -apple-system,"PingFang SC",sans-serif';
+  ctx.fillText(QR_LINK_TEXT, qrX - 15, qrY + 50);
+
+  ctx.fillStyle = '#9aa5b1';
+  ctx.font = '16px -apple-system,"PingFang SC",sans-serif';
+  ctx.fillText('看完整版解读', qrX - 15, qrY + 78);
+  ctx.fillText('解锁 56 位历史名人', qrX - 15, qrY + 100);
+
+  // 底部水印（左下角）
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(240,194,127,0.55)';
+  ctx.font = '16px -apple-system,"PingFang SC",sans-serif';
+  ctx.fillText('· 测一测你和历史哪位名人比较像 ·', 30, H - 30);
+}
+
+function drawQRPlaceholder(ctx, x, y, size) {
+  ctx.fillStyle = '#333';
+  ctx.fillRect(x, y, size, size);
+  ctx.fillStyle = '#888';
+  ctx.font = '14px -apple-system,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('二维码', x + size/2, y + size/2);
+  ctx.textBaseline = 'alphabetic';
+}
+
+function finishShare(canvas) {
+  const dataUrl = canvas.toDataURL('image/png');
+  document.getElementById('shareImg').src = dataUrl;
+  document.getElementById('shareModal').classList.add('show');
+}
+
+function stripTags(html) { return html.replace(/<[^>]+>/g, ''); }
+
+function drawRadarOnCanvas(ctx, cx, cy, R, values) {
+  const n = values.length;
+  const maxV = Math.max(...values, 1);
+
+  ctx.strokeStyle = 'rgba(240,194,127,0.25)';
+  ctx.lineWidth = 1;
+  for (let ring = 1; ring <= 4; ring++) {
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const ang = -Math.PI/2 + (i%n) * 2*Math.PI/n;
+      const r = R * ring/4;
+      const x = cx + r*Math.cos(ang);
+      const y = cy + r*Math.sin(ang);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI/2 + i*2*Math.PI/n;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+R*Math.cos(ang), cy+R*Math.sin(ang));
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const idx = i % n;
+    const ang = -Math.PI/2 + idx*2*Math.PI/n;
+    const r = R * (values[idx]/maxV);
+    const x = cx + r*Math.cos(ang);
+    const y = cy + r*Math.sin(ang);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+  grad.addColorStop(0,'rgba(240,194,127,0.55)');
+  grad.addColorStop(1,'rgba(252,92,125,0.55)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = '#f0c27f';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI/2 + i*2*Math.PI/n;
+    const r = R * (values[i]/maxV);
+    const x = cx + r*Math.cos(ang);
+    const y = cy + r*Math.sin(ang);
+    ctx.beginPath();
+    ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fillStyle = '#fc5c7d';
+    ctx.fill();
+  }
+
+  ctx.fillStyle = '#c9b896';
+  ctx.font = '18px -apple-system,"PingFang SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < n; i++) {
+    const ang = -Math.PI/2 + i*2*Math.PI/n;
+    const x = cx + (R+30)*Math.cos(ang);
+    const y = cy + (R+30)*Math.sin(ang);
+    ctx.fillText(radarLabels[i], x, y);
+  }
+}
+
+function closeShare() {
+  document.getElementById('shareModal').classList.remove('show');
+}
+
+function restart() {
+  current = 0; answers = [];
+  scores = {A:0,B:0,C:0,D:0,E:0,F:0,G:0,H:0};
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('intro').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
